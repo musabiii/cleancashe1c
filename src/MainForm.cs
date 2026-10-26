@@ -172,6 +172,7 @@ namespace CleanCache1C
                     if (ct.IsCancellationRequested)
                         return;
                     UpdateItem(r);
+                    RecolorSizes();
                     progress.Value++;
                     UpdateStatus();
                 }
@@ -197,15 +198,55 @@ namespace CleanCache1C
                     r.Item = null;
                     continue;
                 }
-                var item = new ListViewItem(new[] { r.Base.Name, r.Base.Folder, Scanner.MaskPassword(r.Base.Connect), "", "", r.Base.Id }) { Tag = r };
+                var item = new ListViewItem(new[] { r.Base.Name, r.Base.Folder, Scanner.MaskPassword(r.Base.Connect), "", "", r.Base.Id })
+                {
+                    Tag = r,
+                    UseItemStyleForSubItems = false // чтобы красить ячейки размеров отдельно
+                };
                 if (!r.Base.InList)
-                    item.ForeColor = SystemColors.GrayText;
+                    foreach (ListViewItem.ListViewSubItem sub in item.SubItems)
+                        sub.ForeColor = SystemColors.GrayText;
                 r.Item = item;
                 UpdateItem(r);
                 lv.Items.Add(item);
             }
+            RecolorSizes();
             lv.EndUpdate();
             UpdateStatus();
+        }
+
+        /// <summary>Тепловая раскраска ячеек размеров: зелёный — мало, жёлтый — средне, красный — больше всех.</summary>
+        void RecolorSizes()
+        {
+            long maxLocal = rows.Max(r => (long?)r.LocalSize) ?? 0;
+            long maxRoaming = rows.Max(r => (long?)r.RoamingSize) ?? 0;
+            foreach (var r in rows.Where(r => r.Item != null))
+            {
+                r.Item.SubItems[ColLocal].BackColor = HeatColor(r.LocalSize, maxLocal);
+                r.Item.SubItems[ColRoaming].BackColor = HeatColor(r.RoamingSize, maxRoaming);
+            }
+        }
+
+        // пастельные цвета, как в условном форматировании Excel: текст на них читается
+        static readonly Color HeatLow = Color.FromArgb(198, 239, 206);
+        static readonly Color HeatMid = Color.FromArgb(255, 235, 156);
+        static readonly Color HeatHigh = Color.FromArgb(255, 170, 170);
+
+        static Color HeatColor(long size, long max)
+        {
+            if (size <= 0 || max <= 0)
+                return SystemColors.Window;
+            // корень растягивает шкалу: иначе одна огромная база делает все остальные одинаково зелёными
+            double t = Math.Sqrt((double)size / max);
+            return t < 0.5 ? Blend(HeatLow, HeatMid, t * 2) : Blend(HeatMid, HeatHigh, (t - 0.5) * 2);
+        }
+
+        static Color Blend(Color a, Color b, double t)
+        {
+            return Color.FromArgb(
+                (int)(a.R + (b.R - a.R) * t),
+                (int)(a.G + (b.G - a.G) * t),
+                (int)(a.B + (b.B - a.B) * t));
         }
 
         static bool Matches(Row r, string filter)

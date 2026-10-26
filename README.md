@@ -31,4 +31,6 @@
 build.bat
 ```
 
+Иконка `assets\app.ico` уже лежит в репозитории. Чтобы её перерисовать, запусти `tools\make-icon.ps1` в PowerShell 7. Скрипт рисует ICO на 16–256 px и картинку для просмотра `assets\icon-preview.png`.
+
 Результат: `dist\CleanCache1C.exe`. Нужен .NET SDK 6+ (reference assemblies для net48 подтянутся из NuGet).

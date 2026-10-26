@@ -9,6 +9,8 @@
     <AssemblyName>CleanCache1C</AssemblyName>
     <RootNamespace>CleanCache1C</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- генерируется tools\make-icon.ps1 -->
+    <ApplicationIcon>assets\app.ico</ApplicationIcon>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <DebugType>none</DebugType>
