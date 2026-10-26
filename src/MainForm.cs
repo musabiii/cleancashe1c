@@ -27,7 +27,7 @@ namespace CleanCache1C
         CancellationTokenSource cts;
         bool busy;
 
-        public MainForm()
+        public MainForm(string profileDir)
         {
             Text = "Кэш баз 1С";
             Font = SystemFonts.MessageBoxFont;
@@ -108,6 +108,8 @@ namespace CleanCache1C
 
             Load += (s, e) =>
             {
+                if (profileDir != null)
+                    cbProfile.Items.Add(Scanner.ProfileFromDir(profileDir));
                 foreach (var p in Scanner.FindProfiles())
                     cbProfile.Items.Add(p);
                 cbProfile.SelectedIndex = 0; // вызовет Reload

@@ -67,16 +67,27 @@ namespace CleanCache1C
                 {
                     if (string.Equals(dir, current, StringComparison.OrdinalIgnoreCase))
                         continue;
-                    var roaming = Path.Combine(dir, @"AppData\Roaming");
-                    var local = Path.Combine(dir, @"AppData\Local");
+                    var profile = ProfileFromDir(dir);
+                    profile.Title = Path.GetFileName(dir);
                     // без прав администратора чужие профили не читаются — Exists вернёт false
-                    if (Directory.Exists(Path.Combine(roaming, "1C")) || Directory.Exists(Path.Combine(local, "1C")))
-                        list.Add(new Profile { Title = Path.GetFileName(dir), RoamingAppData = roaming, LocalAppData = local });
+                    if (Directory.Exists(Path.Combine(profile.RoamingAppData, "1C")) || Directory.Exists(Path.Combine(profile.LocalAppData, "1C")))
+                        list.Add(profile);
                 }
             }
             catch (Exception) { }
 
             return list;
+        }
+
+        public static Profile ProfileFromDir(string dir)
+        {
+            dir = Path.GetFullPath(dir);
+            return new Profile
+            {
+                Title = Path.GetFileName(dir.TrimEnd('\\')),
+                RoamingAppData = Path.Combine(dir, @"AppData\Roaming"),
+                LocalAppData = Path.Combine(dir, @"AppData\Local")
+            };
         }
 
         public static List<Row> BuildRows(Profile profile, List<string> warnings)
